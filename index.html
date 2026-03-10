@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora financiera premium · Interés compuesto</title>
+
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Investment Growth">
+  <meta name="theme-color" content="#102a5c">
+
+  <style>
+    :root{
+      --bg:#f3f5f8;
+      --panel:#ffffff;
+      --panel-soft:#f7f8fb;
+      --text:#0f1733;
+      --muted:#6e7a90;
+      --line:#dfe4ec;
+      --line-2:#e8edf4;
+      --primary:#3b82f6;
+      --primary-dark:#1f5fd1;
+      --green:#16a34a;
+      --red:#ef4444;
+      --shadow:0 20px 60px rgba(15,23,51,.08);
+      --radius-xl:32px;
+      --radius-lg:24px;
+      --radius-md:18px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(59,130,246,.06), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(34,197,94,.05), transparent 25%),
+        var(--bg);
+      color:var(--text);
+      padding:28px;
+    }
+
+    .app{max-width:1120px; margin:0 auto;}
+    .card{
+      background:var(--panel);
+      border:1px solid rgba(223,228,236,.9);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .hero{
+      padding:32px;
+      margin-bottom:26px;
+      position:relative;
+      border-radius:32px;
+      color:#f1f5ff;
+      background:
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,.08), transparent 30%),
+        linear-gradient(135deg, #0b1a3a 0%, #102a5c 60%, #0f2347 100%);
+    }
+
+    .hero-badge{
+      display:inline-block;
+      padding:12px 18px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:17px;
+      margin-bottom:26px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.18);
+      color:#e8ecff;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.25fr .75fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .hero h1{
+      margin:0 0 18px;
+      font-size:clamp(2.6rem,5.6vw,4.6rem);
+      line-height:1.02;
+      letter-spacing:-.055em;
+      font-weight:900;
+      color:#ffffff;
+    }
+
+    .hero p{
+      margin:0;
+      color:#c9d2ff;
+      font-size:clamp(1.05rem,1.5vw,1.3rem);
+      line-height:1.8;
+      max-width:900px;
+    }
+
+    .feature-grid{display:grid; grid-template-columns:1fr; gap:16px;}
+    .feature{
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:28px;
+      padding:24px 28px;
+      background:rgba(255,255,255,.10);
+      backdrop-filter:blur(10px);
+    }
+    .feature .eyebrow{
+      color:#cfd7ef;
+      font-size:.95rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+    .feature .value{
+      font-size:1.2rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+      color:#fff;
+    }
+
+    .section{margin-bottom:26px;}
+    .section-head{
+      padding:24px 28px 12px;
+      border-bottom:1px solid var(--line-2);
+      background:linear-gradient(180deg,#fff,#fcfdff);
+    }
+    .section-head h2{margin:0 0 8px; font-size:1.3rem; letter-spacing:-.03em;}
+    .section-head p{margin:0; color:var(--muted); line-height:1.65;}
+
+    .steps{
+      padding:24px 28px 28px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:18px;
+    }
+    .step{
+      background:var(--panel-soft);
+      border:1px solid var(--line-2);
+      border-radius:28px;
+      padding:22px;
+    }
+    .step-number{
+      width:38px; height:38px; border-radius:50%;
+      display:inline-flex; align-items:center; justify-content:center;
+      background:#edf3ff; color:var(--primary-dark); font-weight:900; margin-bottom:12px;
+    }
+    .step h3{margin:0 0 6px; font-size:1.05rem; letter-spacing:-.02em;}
+    .step > p{margin:0 0 16px; color:var(--muted); line-height:1.55; font-size:.96rem;}
+
+    .field{margin-bottom:14px;}
+    .field:last-child{margin-bottom:0}
+    label{
+      display:block; font-size:1rem; font-weight:800;
+      margin-bottom:8px; letter-spacing:-.02em;
+    }
+    .help{
+      display:block; margin-top:6px; color:var(--muted);
+      font-weight:500; font-size:.84rem; line-height:1.45;
+    }
+
+    input, select{
+      width:100%; border:2px solid var(--line); border-radius:18px;
+      padding:16px 18px; font-size:1.07rem; color:var(--text);
+      background:#fff; outline:none; transition:.18s ease;
+    }
+    input:focus, select:focus{
+      border-color:#bfd3fb;
+      box-shadow:0 0 0 5px rgba(59,130,246,.10);
+    }
+
+    .actions{
+      padding:0 28px 28px;
+      display:flex; gap:16px; flex-wrap:wrap;
+    }
+    button{
+      border:none; border-radius:18px; padding:18px 26px;
+      font-size:1rem; font-weight:800; cursor:pointer; transition:.18s ease;
+      min-width:190px;
+    }
+    button:hover{transform:translateY(-1px)}
+    .btn-reset{
+      background:#eef1f5; color:var(--primary);
+      border:1px solid #e2e8f0;
+    }
+    .btn-calc{
+      background:linear-gradient(180deg, #4a8bff 0%, var(--primary) 100%);
+      color:#fff; box-shadow:0 14px 28px rgba(59,130,246,.22);
+    }
+
+    .results{display:none; animation:fadeUp .35s ease;}
+    @keyframes fadeUp{
+      from{opacity:0; transform:translateY(16px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
+    .results-body{
+      padding:28px;
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:22px;
+    }
+    .highlight{
+      padding:28px; border-radius:28px; border:1px solid var(--line-2);
+      background:
+        radial-gradient(circle at 85% 10%, rgba(59,130,246,.06), transparent 24%),
+        linear-gradient(180deg,#ffffff,#fafcff);
+    }
+    .eyebrow-2{
+      color:#6b7280; text-transform:uppercase; letter-spacing:.14em;
+      font-weight:800; font-size:.92rem; margin-bottom:10px;
+    }
+    .final-line{
+      font-size:clamp(2rem,4vw,3.4rem);
+      font-weight:900; line-height:1.02; letter-spacing:-.05em; margin:0 0 14px;
+    }
+    .muted{color:var(--muted); line-height:1.7;}
+
+    .stats{
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px; margin-top:18px;
+    }
+    @media (min-width: 980px){
+      .stats{grid-template-columns:repeat(3,minmax(0,1fr));}
+    }
+    .stat{
+      background:#fff; border:1px solid var(--line-2);
+      border-radius:22px; padding:18px;
+    }
+    .stat small{display:block; color:var(--muted); font-size:.88rem; margin-bottom:6px;}
+    .stat strong{font-size:1.18rem; letter-spacing:-.02em;}
+
+    .summary-stack{display:grid; gap:14px;}
+    .summary-card{
+      background:#fff; border:1px solid var(--line-2); border-radius:24px; padding:20px;
+    }
+    .summary-card h3{margin:0 0 12px; font-size:1.03rem; letter-spacing:-.02em;}
+    .row{
+      display:flex; justify-content:space-between; gap:14px; padding:7px 0; color:#2f3a4b;
+    }
+    .row span:first-child{color:var(--muted);}
+
+    .chart-card, .table-card{padding:28px;}
+    .head-flex{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:12px; flex-wrap:wrap; margin-bottom:16px;
+    }
+    .head-flex h3{margin:0; font-size:1.08rem; letter-spacing:-.02em;}
+    .legend{display:flex; gap:16px; flex-wrap:wrap; color:var(--muted); font-size:.95rem;}
+    .dot{
+      width:12px; height:12px; border-radius:50%;
+      display:inline-block; margin-right:6px; vertical-align:middle;
+    }
+    .chart-wrap{
+      width:100%; overflow:auto; border:1px solid var(--line-2);
+      border-radius:24px; background:#fff; padding:10px;
+    }
+    #chartSvg{width:100%; height:380px; display:block;}
+
+    .table-tools{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:12px; flex-wrap:wrap; margin-bottom:16px;
+    }
+    .toggle{
+      border:none; background:#eef4ff; color:var(--primary-dark);
+      padding:12px 16px; border-radius:14px; font-weight:800; cursor:pointer;
+    }
+    .table-wrap{
+      overflow:auto; border:1px solid var(--line-2);
+      border-radius:22px; background:#fff; display:none;
+    }
+    table{width:100%; border-collapse:collapse; min-width:760px;}
+    th, td{
+      padding:14px 16px; border-bottom:1px solid #edf1f6;
+      text-align:right; white-space:nowrap; font-size:.96rem;
+    }
+    th:first-child, td:first-child{text-align:left;}
+    th{
+      position:sticky; top:0; background:#f8fafc; color:#334155;
+      font-size:.88rem; text-transform:uppercase; letter-spacing:.06em;
+    }
+    tr:hover td{background:#fbfdff;}
+    .empty-note{color:var(--muted); font-size:.95rem;}
+
+    @media (max-width: 920px){
+      .hero-grid, .results-body, .steps{grid-template-columns:1fr;}
+      .hero h1{font-size:3rem;}
+    }
+    @media (max-width: 640px){
+      body{padding:16px}
+      .hero,.section-head,.steps,.actions,.results-body,.chart-card,.table-card{
+        padding-left:18px;padding-right:18px
+      }
+      .hero{padding-top:20px;padding-bottom:20px}
+      .hero-badge{font-size:16px}
+      .hero h1{font-size:2.35rem}
+      button{flex:1}
+      .stats{grid-template-columns:1fr}
+      .step,.feature,.summary-card,.highlight,.stat{border-radius:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <section class="card hero">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-badge">Calculadora financiera premium · Interés compuesto</div>
+          <h1>Haz crecer tu dinero con una proyección clara, elegante y profesional.</h1>
+          <p>
+            Diseñada como una experiencia por pasos: define tu inversión inicial, tus aportes, la tasa estimada y la capitalización.
+            Luego obtén un resumen ejecutivo, una gráfica comparativa y una tabla año por año con escenarios opcionales.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature">
+            <div class="eyebrow">Experiencia</div>
+            <div class="value">Por pasos</div>
+          </div>
+          <div class="feature">
+            <div class="eyebrow">Escenarios</div>
+            <div class="value">Base · Min · Max</div>
+          </div>
+          <div class="feature">
+            <div class="eyebrow">Visualización</div>
+            <div class="value">Gráfica + tabla</div>
+          </div>
+          <div class="feature">
+            <div class="eyebrow">Moneda</div>
+            <div class="value">USD automático</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head">
+        <h2>Configuración de la proyección</h2>
+        <p>Completa cada paso para generar una estimación profesional de crecimiento compuesto.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Inversión inicial</h3>
+          <p>Capital disponible para comenzar hoy.</p>
+          <div class="field">
+            <label for="initial">Inversión inicial ($)</label>
+            <input id="initial" type="number" min="0" step="0.01" value="1000">
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Contribuciones</h3>
+          <p>Aportes mensuales y evolución con el tiempo.</p>
+          <div class="field">
+            <label for="monthly">Contribución mensual ($)</label>
+            <input id="monthly" type="number" min="0" step="0.01" value="500">
+          </div>
+          <div class="field">
+            <label for="increase">Aumento de la contribución anual (%)</label>
+            <input id="increase" type="number" step="0.01" value="10">
+          </div>
+          <div class="field">
+            <label for="years">Tiempo de duración de la inversión (años)</label>
+            <input id="years" type="number" min="1" step="1" value="15">
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Tasa de interés</h3>
+          <p>Escenario principal y escenarios opcionales.</p>
+          <div class="field">
+            <label for="rate">Tasa de interés anual (%)</label>
+            <input id="rate" type="number" step="0.01" value="10">
+          </div>
+          <div class="field">
+            <label for="minrate">Tasa mínima (%) (opcional)</label>
+            <input id="minrate" type="number" step="0.01" value="">
+          </div>
+          <div class="field">
+            <label for="maxrate">Tasa máxima (%) (opcional)</label>
+            <input id="maxrate" type="number" step="0.01" value="">
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">4</div>
+          <h3>Capitalización</h3>
+          <p>Frecuencia con la que el rendimiento se acumula.</p>
+          <div class="field">
+            <label for="compound">Frecuencia de capitalización</label>
+            <select id="compound">
+              <option value="1">Anual</option>
+              <option value="12" selected>Mensual</option>
+              <option value="52">Semanal</option>
+              <option value="365">Diario</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-reset" type="button" onclick="resetForm()">Restablecer</button>
+        <button class="btn-calc" type="button" onclick="calculate()">Calcular</button>
+      </div>
+    </section>
+
+    <section class="card results" id="results">
+      <div class="results-body">
+        <div class="highlight">
+          <div class="eyebrow-2">Proyección destacada</div>
+          <div class="final-line" id="headline">En 15 años tendrás $0</div>
+          <p class="muted" id="headlineText">
+            Resumen ejecutivo de crecimiento compuesto con aportes periódicos y capitalización seleccionada.
+          </p>
+
+          <div class="stats">
+            <div class="stat">
+              <small>Valor final</small>
+              <strong id="statFuture">$0</strong>
+            </div>
+            <div class="stat">
+              <small>Total aportado</small>
+              <strong id="statContrib">$0</strong>
+            </div>
+            <div class="stat">
+              <small>Interés generado</small>
+              <strong id="statInterest">$0</strong>
+            </div>
+            <div class="stat">
+              <small>Tasa base</small>
+              <strong id="statRate">0%</strong>
+            </div>
+            <div class="stat">
+              <small>Multiplicación del capital</small>
+              <strong id="statMultiple">0.00x</strong>
+            </div>
+            <div class="stat">
+              <small>% del total que proviene del interés</small>
+              <strong id="statInterestShare">0%</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-stack">
+          <div class="summary-card">
+            <h3>Resumen completo</h3>
+            <div class="row"><span>Inversión inicial</span><strong id="sumInitial">$0</strong></div>
+            <div class="row"><span>Contribución mensual inicial</span><strong id="sumMonthly">$0</strong></div>
+            <div class="row"><span>Aumento anual</span><strong id="sumIncrease">0%</strong></div>
+            <div class="row"><span>Tiempo</span><strong id="sumYears">0 años</strong></div>
+            <div class="row"><span>Capitalización</span><strong id="sumCompound">Mensual</strong></div>
+          </div>
+
+          <div class="summary-card">
+            <h3>Escenarios</h3>
+            <div class="row"><span>Mínimo</span><strong id="scenarioMin">—</strong></div>
+            <div class="row"><span>Base</span><strong id="scenarioBase">$0</strong></div>
+            <div class="row"><span>Máximo</span><strong id="scenarioMax">—</strong></div>
+          </div>
+
+          <div class="summary-card">
+            <h3>Insight financiero</h3>
+            <div class="row"><span>Punto de inflexión</span><strong id="insightYear">—</strong></div>
+            <div class="row"><span>Lectura</span><strong id="insightShort">—</strong></div>
+            <p class="muted" id="insightText" style="margin:10px 0 0;">El sistema mostrará aquí cuándo el interés compuesto supera el dinero aportado.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section results" id="chartSection">
+      <div class="chart-card">
+        <div class="head-flex">
+          <h3>Proyección anual</h3>
+          <div class="legend">
+            <span><span class="dot" style="background:#ef4444"></span>Valor futuro · tasa base</span>
+            <span><span class="dot" style="background:#16a34a"></span>Contribuciones totales</span>
+            <span><span class="dot" style="background:#2563eb"></span>Interés compuesto acumulado</span>
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          <svg id="chartSvg" viewBox="0 0 900 360" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section results" id="tableSection">
+      <div class="table-card">
+        <div class="table-tools">
+          <div>
+            <h3 style="margin:0 0 4px;">Detalle anual</h3>
+            <div class="empty-note">Ahorros totales año por año en dólares estadounidenses.</div>
+          </div>
+          <button class="toggle" type="button" id="toggleTableBtn">Mostrar tabla</button>
+        </div>
+
+        <div class="table-wrap" id="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Año</th>
+                <th>Contribuciones totales</th>
+                <th>Escenario mínimo</th>
+                <th>Tasa base</th>
+                <th>Escenario máximo</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    let tableVisible = false;
+
+    function formatUSD(value){
+      return new Intl.NumberFormat('en-US',{
+        style:'currency',
+        currency:'USD',
+        maximumFractionDigits:0
+      }).format(value || 0);
+    }
+
+    function formatPct(value){
+      return `${Number(value).toLocaleString('en-US',{maximumFractionDigits:2})}%`;
+    }
+
+    function formatMultiple(value){
+      return `${Number(value).toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2})}x`;
+    }
+
+    function compoundLabel(n){
+      if(n === 1) return 'Anual';
+      if(n === 12) return 'Mensual';
+      if(n === 52) return 'Semanal';
+      if(n === 365) return 'Diario';
+      return `${n} veces/año`;
+    }
+
+    function projectScenario(initial, monthlyStart, annualIncrease, years, annualRate, compoundFreq){
+      let balance = initial;
+      let monthly = monthlyStart;
+      let totalContrib = initial;
+      const yearly = [];
+      let crossoverYear = null;
+
+      for(let year = 1; year <= years; year++){
+        for(let month = 1; month <= 12; month++){
+          balance += monthly;
+          totalContrib += monthly;
+          balance *= Math.pow(1 + (annualRate / compoundFreq), compoundFreq / 12);
+        }
+
+        const interestAccumulated = balance - totalContrib;
+
+        if(crossoverYear === null && interestAccumulated > totalContrib){
+          crossoverYear = year;
+        }
+
+        yearly.push({
+          year,
+          futureValue: balance,
+          contributions: totalContrib,
+          interestAccumulated
+        });
+
+        monthly *= (1 + annualIncrease);
+      }
+
+      return {
+        finalValue: balance,
+        totalContrib,
+        interestEarned: balance - totalContrib,
+        multiple: totalContrib > 0 ? balance / totalContrib : 0,
+        interestSharePct: balance > 0 ? ((balance - totalContrib) / balance) * 100 : 0,
+        crossoverYear,
+        yearly
+      };
+    }
+
+    
+    function drawChart(baseRows){
+      const svg = document.getElementById('chartSvg');
+      const width = 900;
+      const height = 380;
+      const pad = {top: 24, right: 22, bottom: 56, left: 86};
+
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svg.innerHTML = '';
+
+      if(!baseRows.length) return;
+
+      const maxFuture = Math.max(...baseRows.map(r => r.futureValue));
+      const maxContrib = Math.max(...baseRows.map(r => r.contributions));
+      const maxInterest = Math.max(...baseRows.map(r => r.interestAccumulated));
+      const maxY = Math.max(maxFuture, maxContrib, maxInterest) * 1.08 || 1;
+
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+
+      const x = i => {
+        if(baseRows.length === 1) return pad.left + plotW / 2;
+        return pad.left + (i * plotW / (baseRows.length - 1));
+      };
+      const y = v => pad.top + (plotH - (v / maxY) * plotH);
+      const make = (name) => document.createElementNS('http://www.w3.org/2000/svg', name);
+
+      for(let i = 0; i <= 5; i++){
+        const gy = pad.top + (plotH / 5) * i;
+        const value = maxY * (1 - i / 5);
+
+        const line = make('line');
+        line.setAttribute('x1', pad.left);
+        line.setAttribute('y1', gy);
+        line.setAttribute('x2', width - pad.right);
+        line.setAttribute('y2', gy);
+        line.setAttribute('stroke', '#e8edf4');
+        line.setAttribute('stroke-width', '1');
+        svg.appendChild(line);
+
+        const text = make('text');
+        text.setAttribute('x', 10);
+        text.setAttribute('y', gy + 5);
+        text.setAttribute('fill', '#64748b');
+        text.setAttribute('font-size', '12');
+        text.textContent = formatUSD(value);
+        svg.appendChild(text);
+      }
+
+      const yAxis = make('line');
+      yAxis.setAttribute('x1', pad.left);
+      yAxis.setAttribute('y1', pad.top);
+      yAxis.setAttribute('x2', pad.left);
+      yAxis.setAttribute('y2', height - pad.bottom);
+      yAxis.setAttribute('stroke', '#d7deea');
+      yAxis.setAttribute('stroke-width', '1.4');
+      svg.appendChild(yAxis);
+
+      const xAxis = make('line');
+      xAxis.setAttribute('x1', pad.left);
+      xAxis.setAttribute('y1', height - pad.bottom);
+      xAxis.setAttribute('x2', width - pad.right);
+      xAxis.setAttribute('y2', height - pad.bottom);
+      xAxis.setAttribute('stroke', '#d7deea');
+      xAxis.setAttribute('stroke-width', '1.4');
+      svg.appendChild(xAxis);
+
+      const showEvery = baseRows.length <= 10 ? 1 : 2;
+      baseRows.forEach((row, i) => {
+        const shouldShow = i % showEvery === 0 || i === baseRows.length - 1;
+        if(!shouldShow) return;
+        const tx = make('text');
+        tx.setAttribute('x', x(i));
+        tx.setAttribute('y', height - 18);
+        tx.setAttribute('text-anchor', 'middle');
+        tx.setAttribute('fill', '#64748b');
+        tx.setAttribute('font-size', '12');
+        tx.textContent = `Año ${row.year}`;
+        svg.appendChild(tx);
+      });
+
+      const futureVals = baseRows.map(r => r.futureValue);
+      const contribVals = baseRows.map(r => r.contributions);
+      const interestVals = baseRows.map(r => r.interestAccumulated);
+      const buildPath = (values) => values.map((v,i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(v)}`).join(' ');
+
+      const areaPath = buildPath(futureVals) + ' ' +
+        contribVals.map((v,i) => {
+          const idx = contribVals.length - 1 - i;
+          return `L ${x(idx)} ${y(contribVals[idx])}`;
+        }).join(' ') + ' Z';
+
+      const gapArea = make('path');
+      gapArea.setAttribute('d', areaPath);
+      gapArea.setAttribute('fill', 'rgba(239,68,68,0.10)');
+      svg.appendChild(gapArea);
+
+      const interestPath = make('path');
+      interestPath.setAttribute('d', buildPath(interestVals));
+      interestPath.setAttribute('fill', 'none');
+      interestPath.setAttribute('stroke', '#2563eb');
+      interestPath.setAttribute('stroke-width', '3.5');
+      interestPath.setAttribute('stroke-linecap', 'round');
+      interestPath.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(interestPath);
+
+      const contribPath = make('path');
+      contribPath.setAttribute('d', buildPath(contribVals));
+      contribPath.setAttribute('fill', 'none');
+      contribPath.setAttribute('stroke', '#16a34a');
+      contribPath.setAttribute('stroke-width', '4');
+      contribPath.setAttribute('stroke-linecap', 'round');
+      contribPath.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(contribPath);
+
+      const futurePath = make('path');
+      futurePath.setAttribute('d', buildPath(futureVals));
+      futurePath.setAttribute('fill', 'none');
+      futurePath.setAttribute('stroke', '#ef4444');
+      futurePath.setAttribute('stroke-width', '4.5');
+      futurePath.setAttribute('stroke-linecap', 'round');
+      futurePath.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(futurePath);
+
+      baseRows.forEach((row, i) => {
+        const c1 = make('circle');
+        c1.setAttribute('cx', x(i));
+        c1.setAttribute('cy', y(row.futureValue));
+        c1.setAttribute('r', '4.8');
+        c1.setAttribute('fill', '#ef4444');
+        svg.appendChild(c1);
+
+        const c2 = make('circle');
+        c2.setAttribute('cx', x(i));
+        c2.setAttribute('cy', y(row.contributions));
+        c2.setAttribute('r', '4.8');
+        c2.setAttribute('fill', '#16a34a');
+        svg.appendChild(c2);
+
+        const c3 = make('circle');
+        c3.setAttribute('cx', x(i));
+        c3.setAttribute('cy', y(row.interestAccumulated));
+        c3.setAttribute('r', '4');
+        c3.setAttribute('fill', '#2563eb');
+        svg.appendChild(c3);
+      });
+
+      const last = baseRows[baseRows.length - 1];
+      const lastX = x(baseRows.length - 1);
+      const callouts = [
+        { value: last.futureValue, color: '#ef4444', text: formatUSD(last.futureValue), dy: -8 },
+        { value: last.contributions, color: '#16a34a', text: formatUSD(last.contributions), dy: -8 },
+        { value: last.interestAccumulated, color: '#2563eb', text: formatUSD(last.interestAccumulated), dy: 16 }
+      ];
+
+      callouts.forEach(item => {
+        const ly = y(item.value);
+
+        const line = make('line');
+        line.setAttribute('x1', lastX);
+        line.setAttribute('y1', ly);
+        line.setAttribute('x2', width - pad.right + 2);
+        line.setAttribute('y2', ly);
+        line.setAttribute('stroke', item.color);
+        line.setAttribute('stroke-width', '1.5');
+        line.setAttribute('stroke-dasharray', '4 4');
+        svg.appendChild(line);
+
+        const text = make('text');
+        text.setAttribute('x', width - pad.right - 4);
+        text.setAttribute('y', ly + item.dy);
+        text.setAttribute('text-anchor', 'end');
+        text.setAttribute('fill', item.color);
+        text.setAttribute('font-size', '12');
+        text.setAttribute('font-weight', '700');
+        text.textContent = item.text;
+        svg.appendChild(text);
+      });
+    }
+
+function populateTable(baseRows, minRows, maxRows){
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      baseRows.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>Año ${row.year}</td>
+          <td>${formatUSD(row.contributions)}</td>
+          <td>${minRows ? formatUSD(minRows[i].futureValue) : '—'}</td>
+          <td>${formatUSD(row.futureValue)}</td>
+          <td>${maxRows ? formatUSD(maxRows[i].futureValue) : '—'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleTable(){
+      tableVisible = !tableVisible;
+      const wrap = document.getElementById('tableWrap');
+      const btn = document.getElementById('toggleTableBtn');
+      wrap.style.display = tableVisible ? 'block' : 'none';
+      btn.textContent = tableVisible ? 'Ocultar tabla' : 'Mostrar tabla';
+    }
+
+    function resetForm(){
+      document.getElementById('initial').value = 1000;
+      document.getElementById('monthly').value = 500;
+      document.getElementById('increase').value = 10;
+      document.getElementById('years').value = 15;
+      document.getElementById('rate').value = 10;
+      document.getElementById('minrate').value = '';
+      document.getElementById('maxrate').value = '';
+      document.getElementById('compound').value = '12';
+
+      document.getElementById('results').style.display = 'none';
+      document.getElementById('chartSection').style.display = 'none';
+      document.getElementById('tableSection').style.display = 'none';
+      document.getElementById('tableWrap').style.display = 'none';
+      document.getElementById('toggleTableBtn').textContent = 'Mostrar tabla';
+      tableVisible = false;
+    }
+
+    function calculate(){
+      const initial = Number(document.getElementById('initial').value);
+      const monthly = Number(document.getElementById('monthly').value);
+      const annualIncrease = Number(document.getElementById('increase').value) / 100;
+      const years = Math.max(1, Math.floor(Number(document.getElementById('years').value)));
+      const rate = Number(document.getElementById('rate').value) / 100;
+      const minRateRaw = document.getElementById('minrate').value.trim();
+      const maxRateRaw = document.getElementById('maxrate').value.trim();
+      const compound = Number(document.getElementById('compound').value);
+
+      if(
+        [initial, monthly, years, rate, compound].some(v => Number.isNaN(v)) ||
+        initial < 0 || monthly < 0 || years < 1 || compound <= 0
+      ){
+        alert('Por favor, revisa los valores ingresados.');
+        return;
+      }
+
+      const base = projectScenario(initial, monthly, annualIncrease, years, rate, compound);
+      const minScenario = minRateRaw !== '' ? projectScenario(initial, monthly, annualIncrease, years, Number(minRateRaw)/100, compound) : null;
+      const maxScenario = maxRateRaw !== '' ? projectScenario(initial, monthly, annualIncrease, years, Number(maxRateRaw)/100, compound) : null;
+
+      document.getElementById('headline').textContent = `En ${years} años tendrás ${formatUSD(base.finalValue)}`;
+      document.getElementById('headlineText').textContent =
+        `Con una inversión inicial de ${formatUSD(initial)}, aportes mensuales desde ${formatUSD(monthly)} y capitalización ${compoundLabel(compound).toLowerCase()}, tu proyección base alcanza ${formatUSD(base.finalValue)}.`;
+
+      document.getElementById('statFuture').textContent = formatUSD(base.finalValue);
+      document.getElementById('statContrib').textContent = formatUSD(base.totalContrib);
+      document.getElementById('statInterest').textContent = formatUSD(base.interestEarned);
+      document.getElementById('statRate').textContent = formatPct(rate * 100);
+      document.getElementById('statMultiple').textContent = formatMultiple(base.multiple);
+      document.getElementById('statInterestShare').textContent = formatPct(base.interestSharePct);
+
+      document.getElementById('sumInitial').textContent = formatUSD(initial);
+      document.getElementById('sumMonthly').textContent = formatUSD(monthly);
+      document.getElementById('sumIncrease').textContent = formatPct(annualIncrease * 100);
+      document.getElementById('sumYears').textContent = `${years} años`;
+      document.getElementById('sumCompound').textContent = compoundLabel(compound);
+
+      document.getElementById('scenarioMin').textContent = minScenario ? formatUSD(minScenario.finalValue) : '—';
+      document.getElementById('scenarioBase').textContent = formatUSD(base.finalValue);
+      document.getElementById('scenarioMax').textContent = maxScenario ? formatUSD(maxScenario.finalValue) : '—';
+
+      document.getElementById('insightYear').textContent = base.crossoverYear ? `Año ${base.crossoverYear}` : 'Más allá del período';
+      document.getElementById('insightShort').textContent = base.crossoverYear ? 'El interés supera tus aportes' : 'Tus aportes aún dominan';
+      document.getElementById('insightText').textContent = base.crossoverYear
+        ? `A partir del año ${base.crossoverYear}, el interés compuesto acumulado supera el dinero que has aportado. Desde ese punto, el crecimiento del patrimonio empieza a ser impulsado mayormente por el rendimiento del capital.`
+        : 'Dentro del horizonte seleccionado, tus aportes siguen siendo mayores que el interés acumulado. Aun así, el interés compuesto ya está acelerando el crecimiento final.';
+
+      drawChart(base.yearly);
+      populateTable(base.yearly, minScenario ? minScenario.yearly : null, maxScenario ? maxScenario.yearly : null);
+
+      document.getElementById('results').style.display = 'block';
+      document.getElementById('chartSection').style.display = 'block';
+      document.getElementById('tableSection').style.display = 'block';
+      document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    document.getElementById('toggleTableBtn').addEventListener('click', toggleTable);
+    resetForm();
+  </script>
+</body>
+</html>
