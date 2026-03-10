@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Compound Interest Calculator</title>
+
+<!-- Icono normal del navegador -->
+<link rel="icon" type="image/png" href="icon.png" />
+
+<!-- Icono para iPhone al añadir a pantalla de inicio -->
+<link rel="apple-touch-icon" href="icon.png" />
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Compound Interest" />
+
+<meta name="theme-color" content="#c68555" />
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto;
+background:#f4f6f8;
+margin:0;
+padding:30px;
+color:#222;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+h1{
+text-align:center;
+margin-bottom:30px;
+}
+
+.step{
+margin-bottom:25px;
+padding:20px;
+border-radius:10px;
+background:#fafafa;
+}
+
+label{
+display:block;
+margin-top:10px;
+font-weight:600;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin-top:5px;
+border-radius:6px;
+border:1px solid #ddd;
+font-size:15px;
+}
+
+.buttons{
+margin-top:20px;
+display:flex;
+gap:10px;
+}
+
+button{
+flex:1;
+padding:12px;
+border:none;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+}
+
+.reset{
+background:#eee;
+}
+
+.calculate{
+background:#2e7dff;
+color:white;
+}
+
+.results{
+margin-top:40px;
+}
+
+.big-number{
+font-size:32px;
+font-weight:bold;
+margin-bottom:20px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+th,td{
+padding:8px;
+border-bottom:1px solid #ddd;
+text-align:right;
+}
+
+th{
+background:#f3f3f3;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Compound Interest Calculator</h1>
+
+<div class="step">
+
+<h3>Paso 1 — Inversión inicial</h3>
+
+<label>Inversión inicial ($)</label>
+<input id="initial" type="number" value="1000">
+
+</div>
+
+<div class="step">
+
+<h3>Paso 2 — Contribuciones</h3>
+
+<label>Contribución mensual ($)</label>
+<input id="monthly" type="number" value="500">
+
+<label>Aumento anual (%)</label>
+<input id="increase" type="number" value="5">
+
+<label>Tiempo (años)</label>
+<input id="years" type="number" value="15">
+
+</div>
+
+<div class="step">
+
+<h3>Paso 3 — Tasa de interés</h3>
+
+<label>Tasa base (%)</label>
+<input id="rate" type="number" value="8">
+
+<label>Tasa mínima (%) (opcional)</label>
+<input id="minrate" type="number">
+
+<label>Tasa máxima (%) (opcional)</label>
+<input id="maxrate" type="number">
+
+</div>
+
+<div class="step">
+
+<h3>Paso 4 — Capitalización</h3>
+
+<select id="compound">
+<option value="1">Anual</option>
+<option value="12">Mensual</option>
+<option value="52">Semanal</option>
+<option value="365">Diario</option>
+</select>
+
+</div>
+
+<div class="buttons">
+
+<button class="reset" onclick="resetForm()">Restablecer</button>
+
+<button class="calculate" onclick="calculate()">Calcular</button>
+
+</div>
+
+<div class="results" id="results" style="display:none">
+
+<div class="big-number" id="finalValue"></div>
+
+<canvas id="chart"></canvas>
+
+<div id="tableContainer"></div>
+
+</div>
+
+</div>
+
+<script>
+
+let chart;
+
+function resetForm(){
+
+document.querySelectorAll("input").forEach(i=>i.value="")
+document.getElementById("results").style.display="none"
+
+}
+
+function calculate(){
+
+let initial = Number(document.getElementById("initial").value)
+let monthly = Number(document.getElementById("monthly").value)
+let increase = Number(document.getElementById("increase").value)/100
+let years = Number(document.getElementById("years").value)
+let rate = Number(document.getElementById("rate").value)/100
+let compound = Number(document.getElementById("compound").value)
+
+let balance = initial
+
+let yearlyBalances=[]
+let contributions=[]
+
+let totalContrib=initial
+
+for(let y=1;y<=years;y++){
+
+for(let m=1;m<=12;m++){
+
+balance += monthly
+
+balance *= Math.pow((1+rate/compound),compound/12)
+
+totalContrib += monthly
+
+}
+
+yearlyBalances.push(balance)
+
+contributions.push(totalContrib)
+
+monthly *= (1+increase)
+
+}
+
+document.getElementById("results").style.display="block"
+
+document.getElementById("finalValue").innerText =
+"En "+years+" años tendrás $" + balance.toLocaleString(undefined,{maximumFractionDigits:0})
+
+drawChart(yearlyBalances, contributions)
+
+drawTable(yearlyBalances, contributions)
+
+}
+
+function drawChart(balances, contrib){
+
+let ctx=document.getElementById("chart")
+
+if(chart) chart.destroy()
+
+chart=new Chart(ctx,{
+
+type:'line',
+
+data:{
+
+labels:balances.map((_,i)=>"Año "+(i+1)),
+
+datasets:[
+
+{
+label:'Valor futuro',
+data:balances,
+borderColor:'red',
+fill:false
+},
+
+{
+label:'Contribuciones',
+data:contrib,
+borderColor:'green',
+fill:false
+}
+
+]
+
+}
+
+})
+
+}
+
+function drawTable(balances, contrib){
+
+let html="<table><tr><th>Año</th><th>Valor futuro</th><th>Contribuciones</th></tr>"
+
+balances.forEach((b,i)=>{
+
+html+="<tr>"
+
+html+="<td>"+(i+1)+"</td>"
+html+="<td>$"+b.toLocaleString(undefined,{maximumFractionDigits:0})+"</td>"
+html+="<td>$"+contrib[i].toLocaleString(undefined,{maximumFractionDigits:0})+"</td>"
+
+html+="</tr>"
+
+})
+
+html+="</table>"
+
+document.getElementById("tableContainer").innerHTML=html
+
+}
+
+</script>
+
+</body>
+</html>
